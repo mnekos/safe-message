@@ -4,6 +4,7 @@ import pl.mnekos.safemessage.SafeMessage;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 
@@ -20,12 +21,15 @@ public class FileManager {
     }
 
     // Returns true if file exists, and false if copying was needed.
-    public boolean checkFiles() throws URISyntaxException, IOException {
-        if(configFile.exists()) {
+    public boolean checkFiles() throws IOException {
+        if (configFile.exists()) {
             return true;
         }
 
-        Files.copy(new File(instance.getClass().getResource(CONFIG_FILE_NAME).toURI()).toPath(), configFile.toPath());
+        try (InputStream inputStream = instance.getClass().getClassLoader().getResourceAsStream(CONFIG_FILE_NAME)) {
+            Files.copy(inputStream, configFile.toPath());
+        }
+
         return false;
     }
 

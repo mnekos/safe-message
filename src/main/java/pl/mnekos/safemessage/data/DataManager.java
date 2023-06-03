@@ -1,16 +1,18 @@
 package pl.mnekos.safemessage.data;
 
-import org.jetbrains.annotations.NotNull;
+import pl.mnekos.safemessage.AESUtils;
+import pl.mnekos.safemessage.IllegalAESKeyException;
 import pl.mnekos.safemessage.SafeMessage;
+import pl.mnekos.safemessage.Validate;
 import pl.mnekos.safemessage.data.config.Configuration;
 import pl.mnekos.safemessage.data.config.ConfigurationLoader;
+import pl.mnekos.safemessage.data.mysql.MySQLDataStorage;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.URISyntaxException;
-import java.util.Properties;
+import java.net.UnknownHostException;
+import java.util.*;
 
 public class DataManager {
 
@@ -18,9 +20,13 @@ public class DataManager {
     private Configuration configuration;
     private DataStorage storage;
 
-    public DataManager(@NotNull SafeMessage instance) {
+    private Set<Partner> partners;
+    private Map<Partner, List<Message>> currentConversations;
+
+    public DataManager(SafeMessage instance) {
         this.instance = instance;
     }
+
     public void loadConfiguration() throws URISyntaxException, IOException {
         ConfigurationLoader cfgLoader = new ConfigurationLoader(instance);
 
@@ -34,8 +40,133 @@ public class DataManager {
             throw new IllegalStateException("Configuration must be loaded before loading data.");
         }
 
-        // TODO load data
-        // storage = ...
+        switch (configuration.getDataStorageType()) {
+            case "mysql":
+                storage = new MySQLDataStorage(instance, configuration.getJdbcUrl(), configuration.getUser(), configuration.getPassword());
+                break;
+            default:
+                storage = new SerializationDataStorage(instance, configuration.getSerializationDataPath());
+                break;
+        }
+
+        storage.openConnection();
+        storage.loadData();
+
+        partners = storage.getPartners();
+
+        currentConversations = storage.getMessages();
     }
 
+    public void destroy() {
+        storage.closeConnection();
+    }
+
+    public Configuration getConfiguration() {
+        return configuration;
+    }
+
+    public Partner getLastPartner() {
+        return storage.getLastPartner();
+    }
+
+    public void setLastPartner(Partner partner) {
+        Validate.notNull(partner, "partner");
+        storage.setLastPartner(partner);
+    }
+
+    public Partner addPartner(String ip, String name, String secretKeyString) throws UnknownHostException, IllegalAESKeyException {
+        Validate.notEmpty(ip, "ip");
+        InetAddress.getByName(ip); // throws exception if ip is not valid.
+        Validate.hasSize(name, "name", 1, 32);
+        Validate.notEmpty(secretKeyString, "secretKeyString");
+        if(!AESUtils.isValidKey(secretKeyString)) throw new IllegalAESKeyException();
+
+        return storage.addPartner(ip, name, AESUtils.generateSecretKeyFromString(secretKeyString));
+    }
+
+    public Partner getPartnerById(int id) {
+        for(Partner partner : partners) {
+            if(partner.getId() == id) {
+                return partner;
+            }
+        }
+
+        return null;
+    }
+
+    public Partner getPartnerByIp(String ip) {
+        if(ip == null) {
+            return null;
+        }
+
+        for(Partner partner : partners) {
+            if(partner.getIp().equals(ip)) {
+                return partner;
+            }
+        }
+
+        return null;
+    }
+
+    public Partner getPartnerByName(String name) {
+        if(name == null) {
+            return null;
+        }
+
+        for(Partner partner : partners) {
+            if(partner.getName().equalsIgnoreCase(name)) {
+                return partner;
+            }
+        }
+
+        return null;
+    }
+
+    public void logMessage(Message message) {
+        Validate.notNull(message, "message");
+        storage.logMessage(message);
+    }
+
+    public void deletePartner(Partner partner) {
+        Validate.notNull(partner, "partner");
+        partners.remove(partner);
+        storage.deletePartner(partner);
+
+        if(getLastPartner().equals(partner)) {
+            if(partners.size() == 0) {
+                setLastPartner(null);
+            }
+            setLastPartner((Partner) partners.toArray()[0]);
+        }
+    }
+
+    public void setPartnerIp(Partner partner, String ip) throws UnknownHostException {
+        Validate.notNull(partner, "partner");
+        InetAddress.getByName(ip);
+        partner.setIp(ip);
+        storage.setData(partner);
+    }
+
+    public void setPartnerName(Partner partner, String name) {
+        Validate.notNull(partner, "partner");
+        Validate.hasSize(name, "name", 1, 32);
+        partner.setName(name);
+        storage.setData(partner);
+    }
+
+    public void setPartnerSecretKey(Partner partner, String secretKey) throws IllegalAESKeyException {
+        Validate.notNull(partner, "partner");
+        if(!AESUtils.isValidKey(secretKey)) throw new IllegalAESKeyException();
+        partner.setSecretKey(AESUtils.generateSecretKeyFromString(secretKey));
+        storage.setData(partner);
+    }
+
+    public List<Message> getMessages(Partner partner) {
+        Validate.notNull(partner, "partner");
+        return currentConversations.get(partner);
+    }
+
+    public Collection<Partner> getPartners() {
+        return new ArrayList<>(partners);
+    }
 }
