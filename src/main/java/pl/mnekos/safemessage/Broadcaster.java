@@ -5,7 +5,6 @@ import pl.mnekos.safemessage.data.Partner;
 import pl.mnekos.safemessage.data.config.Configuration;
 
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
 
 public class Broadcaster {
 
@@ -86,11 +85,9 @@ public class Broadcaster {
         } else if (os.contains("nix") || os.contains("nux") || os.contains("mac")) {
             // Linux or macOS
             try {
-                String processId = ManagementFactory.getRuntimeMXBean().getName().split("@")[0];
-                String command = String.format("\033]0;%s\007", newTitle);
+                String command = String.format("tput reset && tput setaf 7 && tput bold && tput cup 0 0 && tput el && echo \"%s\"", newTitle);
                 ProcessBuilder processBuilder = new ProcessBuilder("bash", "-c", command);
                 processBuilder.inheritIO();
-                processBuilder.environment().put("PID", processId);
                 Process process = processBuilder.start();
                 process.waitFor();
             } catch (Exception e) {
