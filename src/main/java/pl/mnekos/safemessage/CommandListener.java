@@ -7,6 +7,8 @@ import java.net.ConnectException;
 import java.net.UnknownHostException;
 import java.util.Optional;
 import java.util.Scanner;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class CommandListener implements Runnable {
 
@@ -20,6 +22,11 @@ public class CommandListener implements Runnable {
     @Override
     public void run() {
         Broadcaster bc = instance.getBc();
+
+        ExecutorService messageSender = Executors.newSingleThreadExecutor();
+
+        instance.getExecutorServices().add(messageSender);
+
         try(Scanner scanner = new Scanner(System.in)) {
             bc.send("Welcome to SafeMessage v." + SafeMessage.VERSION + "!");
             bc.send("Remember that in order to receive a message, SafeMessage must be enabled.");
@@ -226,12 +233,16 @@ public class CommandListener implements Runnable {
 
                 Message message = new Message(true, currentPartner, input);
 
-                try {
-                    MessageSender.send(currentPartner.getIp(), instance.getConfiguration().getMessagingPort(), input, currentPartner.getSecretKey());
-                    instance.getDataManager().logMessage(message);
-                } catch (ConnectException e) {
-                    instance.getBc().send("Cannot send message. Receiver is probably offline.");
-                }
+                messageSender.submit(() -> {
+                    try {
+                        MessageSender.send(currentPartner.getIp(), instance.getConfiguration().getMessagingPort(), message.getMessage(), currentPartner.getSecretKey());
+                        instance.getDataManager().logMessage(message);
+                    } catch (ConnectException e) {
+                        instance.getBc().send("Cannot send message. Receiver is probably offline.");
+                    } catch (Exception e) {
+                        instance.getBc().error("Cannot send message.", e);
+                    }
+                });
             }
         } catch (Exception e) {
             throw new RuntimeException(e);

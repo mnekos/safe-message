@@ -30,7 +30,11 @@ public class SafeMessage {
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             if(dataManager != null) {
-                dataManager.destroy();
+                try {
+                    stop();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }));
 
@@ -54,9 +58,6 @@ public class SafeMessage {
     }
 
     public void stop() throws IOException {
-        if(!Thread.currentThread().equals(MAIN_THREAD)) {
-            throw new IllegalThreadStateException("Application must be stopped by main thread.");
-        }
         dataManager.destroy();
         dataManager = null;
 
@@ -67,6 +68,10 @@ public class SafeMessage {
         for (Closeable closeable : closeables) {
             closeable.close();
         }
+    }
+
+    public Set<ExecutorService> getExecutorServices() {
+        return executorServices;
     }
 
     public Set<Closeable> getCloseables() {
