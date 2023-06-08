@@ -32,7 +32,7 @@ public class Broadcaster {
     }
 
     public void changeConversation(Partner newPartner) {
-        //Broadcaster.clearScreen();
+        Broadcaster.clearScreen();
         Broadcaster.setTitle("Conversation with " + newPartner.getName());
 
         instance.getDataManager().setLastPartner(newPartner);

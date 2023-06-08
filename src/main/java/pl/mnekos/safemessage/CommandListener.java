@@ -4,6 +4,7 @@ import pl.mnekos.safemessage.data.Message;
 import pl.mnekos.safemessage.data.Partner;
 
 import java.net.ConnectException;
+import java.net.InetAddress;
 import java.net.NoRouteToHostException;
 import java.net.UnknownHostException;
 import java.util.Optional;
@@ -31,6 +32,9 @@ public class CommandListener implements Runnable {
         try(Scanner scanner = new Scanner(System.in)) {
             bc.send("Welcome to SafeMessage v." + SafeMessage.VERSION + "!");
             bc.send("Remember that in order to receive a message, SafeMessage must be enabled.");
+            String publicIp = PublicIP.getPublicIP();
+            if(publicIp != null) bc.send("Your public ip: " + publicIp);
+            bc.send("Your local ip: " + InetAddress.getLocalHost().getHostAddress());
             bc.send("You can use commands with prefix \"/\". Type \"/help\" to see a list of commands.");
 
             currentPartner = instance.getDataManager().getLastPartner();
@@ -46,7 +50,7 @@ public class CommandListener implements Runnable {
                     if(instance.getDataManager().getPartners().size() == 0) {
                         bc.send("Please type ip of partner to connect:");
                         String ip = scanner.nextLine();
-                        bc.send("Type secret key:");
+                        bc.send("Type secret key (if you don't have one, here is one randomly generated to share with your receiver " + AESUtils.generateAESKeyAsString() +  " ):");
                         String key = scanner.nextLine();
                         bc.send("Type partner's name:");
                         String name = scanner.nextLine();
@@ -86,6 +90,8 @@ public class CommandListener implements Runnable {
                         bc.send("/del <name/ip> - deletes partner (you won't be able to receive a message from him and entire conversation history will be deleted)");
                         bc.send("/add <ip> <name> <secret key> - adds new partner (but doesn't switch conversation!)");
                         bc.send("/set <name/ip> <\"ip\"/\"name\"/\"secretkey\"> <new value> - sets information about partner.");
+                        bc.send("/ip - provides your public ip");
+                        bc.send("/rk - provides random secret key");
                         bc.send("/exit - exits application");
                         continue;
                     }
@@ -233,6 +239,18 @@ public class CommandListener implements Runnable {
 
                     if(command.equals("/exit")) {
                         System.exit(0);
+                    }
+
+                    if(command.equals("/ip")) {
+                        publicIp = PublicIP.getPublicIP();
+                        if(publicIp != null) bc.send("Your public ip: " + publicIp);
+                        bc.send("Your local ip: " + InetAddress.getLocalHost().getHostAddress());
+                        continue;
+                    }
+
+                    if(command.equals("/rk")) {
+                        bc.send("Random secret key: " + AESUtils.generateAESKeyAsString());
+                        continue;
                     }
 
                     bc.send("Type /help to see a list of commands.");
