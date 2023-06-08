@@ -2,40 +2,44 @@ package pl.mnekos.safemessage.data.mysql;
 
 import pl.mnekos.safemessage.AESUtils;
 import pl.mnekos.safemessage.SafeMessage;
-import pl.mnekos.safemessage.data.DataStorage;
 import pl.mnekos.safemessage.data.Message;
 import pl.mnekos.safemessage.data.Partner;
 
 import javax.crypto.SecretKey;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
 
-public class MySQLDataStorage extends SQLDataStorage {
+public class SQLiteDataStorage extends SQLDataStorage {
 
-    private Database database;
-    private SQLUser user;
+    private String url;
 
-    public MySQLDataStorage(SafeMessage instance, Database database, SQLUser user) {
+    public SQLiteDataStorage(SafeMessage instance, String url) {
         super(instance);
-        this.database = database;
-        this.user = user;
+        this.url = url;
     }
 
     @Override
     public void openConnection() {
+        try {
+            Class.forName("org.sqlite.JDBC");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
         super.openConnection();
 
         try {
             sqlService.executeUpdate("CREATE TABLE IF NOT EXISTS partners (" +
-                    "  id INT AUTO_INCREMENT PRIMARY KEY," +
+                    "  id INTEGER PRIMARY KEY AUTOINCREMENT," +
                     "  ip VARCHAR(255)," +
                     "  name VARCHAR(255)," +
                     "  secret_key VARCHAR(255)," +
                     "  is_last BOOLEAN" +
                     ");", null);
             sqlService.executeUpdate("CREATE TABLE IF NOT EXISTS messages (" +
-                    "  id INT AUTO_INCREMENT PRIMARY KEY," +
+                    "  id INTEGER PRIMARY KEY AUTOINCREMENT," +
                     "  from_me BOOLEAN," +
                     "  partner_id INT NOT NULL," +
                     "  time TIMESTAMP NOT NULL," +
@@ -75,10 +79,11 @@ public class MySQLDataStorage extends SQLDataStorage {
                     while (resultSet.next()) {
                         boolean fromMe = resultSet.getBoolean("from_me");
                         int partnerId = resultSet.getInt("partner_id");
-                        LocalDateTime time = resultSet.getTimestamp("time").toLocalDateTime();
+                        String timestampString = resultSet.getString("time");
+                        LocalDateTime time = LocalDateTime.parse(timestampString, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
                         String message = resultSet.getString("message");
 
-                        Partner partner = super.getPartner(partnerId);
+                        Partner partner = getPartner(partnerId);
 
                         if(partner != null) conversations.get(partner).add(new Message(fromMe, partner, time, message));
                     }
@@ -93,6 +98,7 @@ public class MySQLDataStorage extends SQLDataStorage {
 
     @Override
     protected SQLService getSQLService() {
-        return new MySQLService(database, user);
+        return new SQLiteService(url);
     }
+
 }

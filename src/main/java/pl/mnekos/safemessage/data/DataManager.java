@@ -6,7 +6,10 @@ import pl.mnekos.safemessage.SafeMessage;
 import pl.mnekos.safemessage.Validate;
 import pl.mnekos.safemessage.data.config.Configuration;
 import pl.mnekos.safemessage.data.config.ConfigurationLoader;
+import pl.mnekos.safemessage.data.mysql.Database;
 import pl.mnekos.safemessage.data.mysql.MySQLDataStorage;
+import pl.mnekos.safemessage.data.mysql.SQLUser;
+import pl.mnekos.safemessage.data.mysql.SQLiteDataStorage;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -42,10 +45,19 @@ public class DataManager {
 
         switch (configuration.getDataStorageType()) {
             case "mysql":
-                storage = new MySQLDataStorage(instance, configuration.getJdbcUrl(), configuration.getUser(), configuration.getPassword());
+                Database database = new Database(configuration.getMysqlIP(), configuration.getMysqlPort(), configuration.getDatabaseName());
+                SQLUser user = new SQLUser(configuration.getMysqlUserName(), configuration.getMysqlUserPassword());
+
+                storage = new MySQLDataStorage(instance, database, user);
+                instance.getBc().send("Choose MySQL storage type.");
+                break;
+            case "sqlite":
+                storage = new SQLiteDataStorage(instance, configuration.getSqliteUrl());
+                instance.getBc().send("Choose SQLite storage type.");
                 break;
             default:
                 storage = new SerializationDataStorage(instance, configuration.getSerializationDataPath());
+                instance.getBc().send("Choose storage storage type.");
                 break;
         }
 
@@ -132,10 +144,11 @@ public class DataManager {
         partners.remove(partner);
         storage.deletePartner(partner);
 
-        if(getLastPartner().equals(partner)) {
-            if(partners.size() == 0) {
-                setLastPartner(null);
-            }
+        if(partners.size() == 0) {
+            return;
+        }
+
+        if(Objects.equals(getLastPartner(), partner)) {
             setLastPartner((Partner) partners.toArray()[0]);
         }
     }

@@ -4,6 +4,7 @@ import pl.mnekos.safemessage.data.Message;
 import pl.mnekos.safemessage.data.Partner;
 
 import java.net.ConnectException;
+import java.net.NoRouteToHostException;
 import java.net.UnknownHostException;
 import java.util.Optional;
 import java.util.Scanner;
@@ -51,6 +52,11 @@ public class CommandListener implements Runnable {
                         String name = scanner.nextLine();
 
                         currentPartner = instance.getDataManager().addPartner(ip, name, key);
+                        if(currentPartner == null) {
+                            bc.send("Error, cannot create new partner.");
+                            continue;
+                        }
+
                         instance.getDataManager().setLastPartner(currentPartner);
                         bc.changeConversation(currentPartner);
                     } else {
@@ -70,11 +76,9 @@ public class CommandListener implements Runnable {
                 String input = scanner.nextLine();
 
                 if(input.startsWith("/")) {
-                    input = input.toLowerCase();
-
                     String[] args = input.split(" ");
 
-                    String command = args[0];
+                    String command = args[0].toLowerCase();
                     if(command.equals("/help")) {
                         bc.send("List of commands:");
                         bc.send("/list - shows list of all your partners (name, ip and secret key).");
@@ -142,6 +146,7 @@ public class CommandListener implements Runnable {
                                 bc.changeConversation(partner);
                             } else {
                                 bc.send("You deleted your current partner.");
+                                currentPartner = null;
                             }
                         }
                         continue;
@@ -163,7 +168,10 @@ public class CommandListener implements Runnable {
                         }
 
                         try {
-                            instance.getDataManager().addPartner(ip, name, secretKey);
+                            if(instance.getDataManager().addPartner(ip, name, secretKey) == null) {
+                                bc.send("Error, cannot create new partner.");
+                                continue;
+                            }
                             bc.send("Added new partner!");
                         } catch (UnknownHostException e) {
                             bc.send("IP not found.");
@@ -231,6 +239,11 @@ public class CommandListener implements Runnable {
                     continue;
                 }
 
+                if(input.length() > 10000) {
+                    instance.getBc().send("Your message can have only 10000 characters.");
+                    continue;
+                }
+
                 Message message = new Message(true, currentPartner, input);
 
                 messageSender.submit(() -> {
@@ -238,7 +251,9 @@ public class CommandListener implements Runnable {
                         MessageSender.send(currentPartner.getIp(), instance.getConfiguration().getMessagingPort(), message.getMessage(), currentPartner.getSecretKey());
                         instance.getDataManager().logMessage(message);
                     } catch (ConnectException e) {
-                        instance.getBc().send("Cannot send message. Receiver is probably offline.");
+                        instance.getBc().error("Cannot send message. Receiver is offline or message can't reach him due to firewall settings or network configuration.");
+                    } catch (NoRouteToHostException e) {
+                        instance.getBc().send("Cannot send message. Are you sure, you are online?");
                     } catch (Exception e) {
                         instance.getBc().error("Cannot send message.", e);
                     }

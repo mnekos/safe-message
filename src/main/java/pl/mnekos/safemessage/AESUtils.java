@@ -9,9 +9,14 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 
 public class AESUtils {
+
     public static SecretKey generateSecretKeyFromString(String keyString) {
         byte[] keyBytes = Base64.getDecoder().decode(keyString);
-        return new SecretKeySpec(keyBytes, 0, keyBytes.length, "AES");
+        return generateSecretKey(keyBytes);
+    }
+
+    public static SecretKey generateSecretKey(byte[] keyBytes) {
+        return new SecretKeySpec(keyBytes, "AES");
     }
 
     public static String encryptAES(String message, SecretKey key) throws Exception {

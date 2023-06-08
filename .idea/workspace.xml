@@ -4,23 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ec6b03f0-9e02-45c0-a35c-c79e6d80fddc" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/pl/mnekos/safemessage/CommandListener.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
+    <list default="true" id="ec6b03f0-9e02-45c0-a35c-c79e6d80fddc" name="Changes" comment="sending and logging message in another thread">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/pl/mnekos/safemessage/AESUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/pl/mnekos/safemessage/AESUtils.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/pl/mnekos/safemessage/Broadcaster.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/pl/mnekos/safemessage/Broadcaster.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/pl/mnekos/safemessage/Listener.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/pl/mnekos/safemessage/SafeMessage.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/pl/mnekos/safemessage/SafeMessage.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/pl/mnekos/safemessage/connection/ConnectionService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/pl/mnekos/safemessage/CommandListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/pl/mnekos/safemessage/CommandListener.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/pl/mnekos/safemessage/data/DataManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/pl/mnekos/safemessage/data/DataManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/pl/mnekos/safemessage/data/DataStorage.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/pl/mnekos/safemessage/data/DataStorage.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/pl/mnekos/safemessage/data/Message.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/pl/mnekos/safemessage/data/Message.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/pl/mnekos/safemessage/data/Partner.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/pl/mnekos/safemessage/data/Partner.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/pl/mnekos/safemessage/data/config/Configuration.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/pl/mnekos/safemessage/data/config/Configuration.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/pl/mnekos/safemessage/data/config/ConfigurationLoader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/pl/mnekos/safemessage/data/config/ConfigurationLoader.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/pl/mnekos/safemessage/data/config/FileManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/pl/mnekos/safemessage/data/config/FileManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/pl/mnekos/safemessage/data/json/JSONDataStorage.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/pl/mnekos/safemessage/data/mysql/MySQLDataStorage.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/pl/mnekos/safemessage/data/mysql/MySQLDataStorage.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/config.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/config.properties" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -73,18 +65,19 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "last_opened_file_path": "G:/Projekty/SafeMessage",
-    "project.structure.last.edited": "SDKs",
-    "project.structure.proportion": "0.15",
-    "project.structure.side.proportion": "0.2"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;G:/Projekty/TestProject&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;SDKs&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="G:\Projekty\SafeMessage\src\main\java\pl\mnekos\safemessage\data\mysql" />
       <recent name="G:\Projekty\SafeMessage\src\main\java\pl\mnekos\safemessage" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
@@ -133,7 +126,35 @@
       <option name="project" value="LOCAL" />
       <updated>1685209973907</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="First day...">
+      <created>1685821669231</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1685821669231</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Initial commit">
+      <created>1685873724888</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1685873724888</updated>
+    </task>
+    <task id="LOCAL-00004" summary="setTitle change for linux">
+      <created>1685883070831</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1685883070831</updated>
+    </task>
+    <task id="LOCAL-00005" summary="sending and logging message in another thread">
+      <created>1685883681645</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1685883681645</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -148,7 +169,11 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
+    <option name="CHECK_NEW_TODO" value="false" />
     <MESSAGE value="First day..." />
-    <option name="LAST_COMMIT_MESSAGE" value="First day..." />
+    <MESSAGE value="Initial commit" />
+    <MESSAGE value="setTitle change for linux" />
+    <MESSAGE value="sending and logging message in another thread" />
+    <option name="LAST_COMMIT_MESSAGE" value="sending and logging message in another thread" />
   </component>
 </project>
