@@ -16,6 +16,7 @@ This application offers peer-to-peer encrypted communication, allowing users to 
 
 ## Requirements
 
+- Java 8
 - Firewall and network configuration may be required for proper functioning of the program.
 
 ## Installation
