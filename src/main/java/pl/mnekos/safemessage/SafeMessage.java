@@ -14,20 +14,15 @@ import java.util.concurrent.Executors;
 public class SafeMessage {
 
     public static final String VERSION = "1.0";
-
     private Broadcaster bc;
     private DataManager dataManager;
     private MessageHandler messageHandler;
     private final Set<ExecutorService> executorServices = new HashSet<>();
     private final Set<Closeable> closeables = new HashSet<>();
 
-    private Thread MAIN_THREAD;
-
     public SafeMessage() {}
 
     public void start() {
-        MAIN_THREAD = Thread.currentThread();
-
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             if(dataManager != null) {
                 try {
@@ -38,8 +33,8 @@ public class SafeMessage {
             }
         }));
 
-        bc = new Broadcaster(this);
         dataManager = new DataManager(this);
+        bc = new Broadcaster(dataManager);
 
         try {
             dataManager.loadConfiguration();

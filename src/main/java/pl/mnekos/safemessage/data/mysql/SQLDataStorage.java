@@ -1,7 +1,7 @@
 package pl.mnekos.safemessage.data.mysql;
 
 import pl.mnekos.safemessage.AESUtils;
-import pl.mnekos.safemessage.SafeMessage;
+import pl.mnekos.safemessage.Broadcaster;
 import pl.mnekos.safemessage.data.DataStorage;
 import pl.mnekos.safemessage.data.Message;
 import pl.mnekos.safemessage.data.Partner;
@@ -10,18 +10,17 @@ import javax.crypto.SecretKey;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
 
 public abstract class SQLDataStorage implements DataStorage {
 
-    protected final SafeMessage instance;
+    protected Broadcaster bc;
 
     protected Map<Partner, List<Message>> conversations;
 
-    protected SQLDataStorage(SafeMessage instance) {
-        this.instance = instance;
+    protected SQLDataStorage(Broadcaster bc) {
+        this.bc = bc;
     }
 
     protected abstract SQLService getSQLService();
@@ -39,7 +38,7 @@ public abstract class SQLDataStorage implements DataStorage {
             try {
                 sqlService.close();
             } catch (SQLException e) {
-                instance.getBc().error(e);
+                bc.error(e);
             }
         }
     }
@@ -73,7 +72,7 @@ public abstract class SQLDataStorage implements DataStorage {
             sqlService.executeUpdate("UPDATE `partners` SET `is_last`=true WHERE `id`=?;", null, partner.getId());
             partner.setLast(true);
         } catch (SQLException e) {
-            instance.getBc().error(e);
+            bc.error(e);
         }
     }
 
@@ -91,7 +90,7 @@ public abstract class SQLDataStorage implements DataStorage {
                     return resultSet.getInt(1);
                 }
             } catch (SQLException e) {
-                instance.getBc().error(e);
+                bc.error(e);
             }
 
             return 0;
@@ -101,7 +100,7 @@ public abstract class SQLDataStorage implements DataStorage {
             int id = sqlService.executeUpdate("INSERT INTO `partners`(`ip`, `name`, `secret_key`, `is_last`) VALUES (?, ?, ?, ?)", function, ip, name, AESUtils.toString(secretKey), false);
 
             if(id == 0) {
-                instance.getBc().error("Cannot get id of created partner.");
+                bc.error("Cannot get id of created partner.");
                 return null;
             }
 
@@ -109,7 +108,7 @@ public abstract class SQLDataStorage implements DataStorage {
             conversations.put(partner, new ArrayList<>());
             return partner;
         } catch (SQLException e) {
-            instance.getBc().error(e);
+            bc.error(e);
         }
 
         return null;
@@ -122,7 +121,7 @@ public abstract class SQLDataStorage implements DataStorage {
             sqlService.executeUpdate("DELETE FROM `partners` WHERE id=?", null, partner.getId());
             conversations.remove(partner);
         } catch (SQLException e) {
-            instance.getBc().error(e);
+            bc.error(e);
         }
     }
 
@@ -131,7 +130,7 @@ public abstract class SQLDataStorage implements DataStorage {
         try {
             sqlService.executeUpdate("UPDATE `partners` SET `ip`=?,`name`=?,`secret_key`=?,`is_last`=? WHERE `id`=?", null, partner.getIp(), partner.getName(), AESUtils.toString(partner.getSecretKey()), false, partner.getId());
         } catch (SQLException e) {
-            instance.getBc().error(e);
+            bc.error(e);
         }
     }
 
@@ -140,7 +139,7 @@ public abstract class SQLDataStorage implements DataStorage {
         try {
             sqlService.executeUpdate("INSERT INTO `messages`(`from_me`, `partner_id`, `time`, `message`) VALUES (?,?,?,?)", null, message.isFromMe(), message.getPartner().getId(), message.getTime(), message.getMessage());
         } catch (SQLException e) {
-            instance.getBc().error(e);
+            bc.error(e);
         }
     }
 

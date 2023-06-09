@@ -5,7 +5,6 @@ import pl.mnekos.safemessage.SafeMessage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 
 public class FileManager {

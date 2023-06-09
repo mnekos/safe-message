@@ -1,5 +1,6 @@
 package pl.mnekos.safemessage;
 
+import pl.mnekos.safemessage.data.DataManager;
 import pl.mnekos.safemessage.data.Message;
 import pl.mnekos.safemessage.data.Partner;
 import pl.mnekos.safemessage.data.config.Configuration;
@@ -8,10 +9,10 @@ import java.io.IOException;
 
 public class Broadcaster {
 
-    private SafeMessage instance;
+    private DataManager dataManager;
 
-    public Broadcaster(SafeMessage instance) {
-        this.instance = instance;
+    public Broadcaster(DataManager dataManager) {
+        this.dataManager = dataManager;
     }
 
     public void send(String message) {
@@ -35,14 +36,14 @@ public class Broadcaster {
         Broadcaster.clearScreen();
         Broadcaster.setTitle("Conversation with " + newPartner.getName());
 
-        instance.getDataManager().setLastPartner(newPartner);
-        for(Message message : instance.getDataManager().getMessages(newPartner)) {
+        dataManager.setLastPartner(newPartner);
+        for(Message message : dataManager.getMessages(newPartner)) {
             printMessage(message);
         }
     }
 
     public void printMessage(Message message) {
-        Configuration config = instance.getDataManager().getConfiguration();
+        Configuration config = dataManager.getConfiguration();
         String syntax = config.getSyntax();
 
         syntax = syntax.replaceAll("%date%", message.getTime().format(config.getDateFormat()));

@@ -1,7 +1,7 @@
 package pl.mnekos.safemessage.data.mysql;
 
 import pl.mnekos.safemessage.AESUtils;
-import pl.mnekos.safemessage.SafeMessage;
+import pl.mnekos.safemessage.Broadcaster;
 import pl.mnekos.safemessage.data.Message;
 import pl.mnekos.safemessage.data.Partner;
 
@@ -16,8 +16,8 @@ public class SQLiteDataStorage extends SQLDataStorage {
 
     private String url;
 
-    public SQLiteDataStorage(SafeMessage instance, String url) {
-        super(instance);
+    public SQLiteDataStorage(Broadcaster bc, String url) {
+        super(bc);
         this.url = url;
     }
 
@@ -47,7 +47,7 @@ public class SQLiteDataStorage extends SQLDataStorage {
                     "  FOREIGN KEY (partner_id) REFERENCES partners(id)" +
                     ");", null);
         } catch (SQLException e) {
-            instance.getBc().error(e);
+            bc.error(e);
         }
     }
 
@@ -70,7 +70,7 @@ public class SQLiteDataStorage extends SQLDataStorage {
                         conversations.put(partner, new ArrayList<>());
                     }
                 } catch (SQLException e) {
-                    instance.getBc().error(e);
+                    bc.error(e);
                 }
             });
 
@@ -88,11 +88,11 @@ public class SQLiteDataStorage extends SQLDataStorage {
                         if(partner != null) conversations.get(partner).add(new Message(fromMe, partner, time, message));
                     }
                 } catch (SQLException e) {
-                    instance.getBc().error(e);
+                    bc.error(e);
                 }
             });
         } catch (SQLException e) {
-            instance.getBc().error(e);
+            bc.error(e);
         }
     }
 

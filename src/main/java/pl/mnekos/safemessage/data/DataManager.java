@@ -48,11 +48,11 @@ public class DataManager {
                 Database database = new Database(configuration.getMysqlIP(), configuration.getMysqlPort(), configuration.getDatabaseName());
                 SQLUser user = new SQLUser(configuration.getMysqlUserName(), configuration.getMysqlUserPassword());
 
-                storage = new MySQLDataStorage(instance, database, user);
+                storage = new MySQLDataStorage(instance.getBc(), database, user);
                 instance.getBc().send("Choose MySQL storage type.");
                 break;
             case "sqlite":
-                storage = new SQLiteDataStorage(instance, configuration.getSqliteUrl());
+                storage = new SQLiteDataStorage(instance.getBc(), configuration.getSqliteUrl());
                 instance.getBc().send("Choose SQLite storage type.");
                 break;
             default:
@@ -94,16 +94,6 @@ public class DataManager {
         if(!AESUtils.isValidKey(secretKeyString)) throw new IllegalAESKeyException();
 
         return storage.addPartner(ip, name, AESUtils.generateSecretKeyFromString(secretKeyString));
-    }
-
-    public Partner getPartnerById(int id) {
-        for(Partner partner : partners) {
-            if(partner.getId() == id) {
-                return partner;
-            }
-        }
-
-        return null;
     }
 
     public Partner getPartnerByIp(String ip) {
