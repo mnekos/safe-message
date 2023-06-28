@@ -46,13 +46,13 @@ public class Broadcaster {
         Configuration config = dataManager.getConfiguration();
         String syntax = config.getSyntax();
 
-        syntax = syntax.replaceAll("%date%", message.getTime().format(config.getDateFormat()));
+        syntax = syntax.replace("%date%", message.getTime().format(config.getDateFormat()));
         if(message.isFromMe()) {
-            syntax = syntax.replaceAll("%from%", config.getMyName());
+            syntax = syntax.replace("%from%", config.getMyName());
         } else {
-            syntax = syntax.replaceAll("%from%", message.getPartner().getName());
+            syntax = syntax.replace("%from%", message.getPartner().getName());
         }
-        syntax = syntax.replaceAll("%message%", message.getMessage());
+        syntax = syntax.replace("%message%", message.getMessage());
 
         send(syntax);
     }
